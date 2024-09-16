@@ -20,4 +20,4 @@ RUN npm run build
 EXPOSE 5173
 
 # Start the Vite preview server
-CMD ["npm", "run", "serve"]
+CMD ["npm", "run", "dev"]
