@@ -11,7 +11,6 @@ RUN npm cache clean --force
 
 # Set npm network timeout to 10 minutes (600000 milliseconds)
 RUN npm config set fetch-timeout 600000
-RUN npm config set connect-timeout 600000
 
 # Optionally, use a different npm registry
 RUN npm config set registry https://registry.npmjs.org/
