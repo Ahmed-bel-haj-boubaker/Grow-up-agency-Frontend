@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:18-alpine
 
 # Set the working directory
 WORKDIR /app
@@ -13,7 +13,8 @@ RUN npm config set fetch-retries 5 && \
     npm config set fetch-timeout 120000
 
 # Install dependencies
-RUN npm install
+RUN npm install --verbose
+
 
 # Copy the rest of your application code
 COPY . .
