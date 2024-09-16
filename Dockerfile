@@ -7,14 +7,11 @@ WORKDIR /app
 # Copy package.json and package-lock.json (or yarn.lock) to the container
 COPY package.json package-lock.json ./
 
-# Update npm to the latest stable version to avoid deprecated warnings
+# Update npm to the latest stable version
 RUN npm install -g npm@10.8.2
 
-# Set a longer timeout for npm in case of network issues
-RUN npm set timeout 600000
-
-# Install dependencies with cache to avoid hitting the network where possible
-RUN npm install --cache /tmp/empty-cache --prefer-offline
+# Install dependencies with a higher network timeout and cache to avoid network issues
+RUN npm install --cache /tmp/empty-cache --prefer-offline --fetch-timeout=600000 --fetch-retries=5
 
 # Copy the rest of the application's code to the container
 COPY . .
