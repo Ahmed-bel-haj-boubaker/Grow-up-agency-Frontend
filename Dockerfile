@@ -1,34 +1,24 @@
 FROM node:18.17.1
 
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json (or yarn.lock)
-COPY package.json package-lock.json ./ 
+# Copy package files
+COPY package.json package-lock.json ./
 
-# Clean npm cache
-RUN npm cache clean --force
+# Clean npm cache and configure npm
+RUN npm cache clean --force && \
+    npm config set fetch-timeout 1200000 && \
+    npm config set registry https://registry.npmjs.com/ && \
+    npm install -g npm@latest && \
+    npm install --force
 
-# Set npm network timeout to 10 minutes (600000 milliseconds)
-RUN npm config set fetch-timeout 600000
-
-# Optionally, use a different npm registry
-RUN npm config set registry https://registry.npmjs.org/
-
-# Update npm to the latest version
-RUN npm install -g npm@latest
-
-# Install dependencies
-RUN npm install
-
-# Copy the rest of your application's code
+# Copy the rest of your application code
 COPY . .
 
-# Build the Vite application
+# Build the application
 RUN npm run build
 
-# Expose port 5173 for the Vite preview server
+# Expose port and start the application
 EXPOSE 5173
-
-# Start the Vite preview server
 CMD ["npm", "run", "dev"]
