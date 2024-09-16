@@ -6,8 +6,6 @@ import {
   DialogFooter,
   Input,
   Typography,
-  Select,
-  Option,
 } from "@material-tailwind/react";
 import axios from "axios";
 import { useState, useEffect } from "react";
@@ -17,6 +15,7 @@ import { addCurrentOrderRedux } from "../../Redux/slice/OrderSlice";
 import { addSalesRedux } from "../../Redux/slice/salesSlice";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import AsyncSelect from "react-select/async";
 
 const AddOrders = () => {
   const [open, setOpen] = useState(false);
@@ -27,7 +26,7 @@ const AddOrders = () => {
   const [status, setStatus] = useState("");
 
   const [orderItems, setOrderItems] = useState([
-    { product_id: "", quantity: 0, price: 0 },
+    { product_id: null, quantity: 0, price: 0 },
   ]);
 
   const allProd = useSelector((state) => state.products.listofAllProducts);
@@ -42,39 +41,50 @@ const AddOrders = () => {
 
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    const updatedOrderItems = orderItems.map((item) => {
-      const selectedProduct = allProd.find(
-        (prod) => prod._id === item.product_id
-      );
-      if (selectedProduct) {
-        return { ...item, price: item.quantity * selectedProduct.price };
-      }
-      return item;
-    });
-    setOrderItems(updatedOrderItems);
-  }, [allProd]);
+  const filterProducts = (inputValue) => {
+    return allProd.filter((product) =>
+      product.title.toLowerCase().includes(inputValue.toLowerCase())
+    );
+  };
 
-  const handleProductChange = (index, value) => {
+  const loadOptions = (inputValue, callback) => {
+    const filteredProducts = filterProducts(inputValue).map((p) => ({
+      value: p._id,
+      label: (
+        <div className="flex items-center">
+          <img src={p.image} alt="" className="h-6 w-6 mr-2" />
+          {p.title}
+        </div>
+      ),
+    }));
+    callback(filteredProducts);
+  };
+
+  const handleProductChange = (index, selectedOption) => {
     const updatedOrderItems = [...orderItems];
-    updatedOrderItems[index].product_id = value;
+    updatedOrderItems[index].product_id = selectedOption
+      ? selectedOption.value
+      : null;
     setOrderItems(updatedOrderItems);
   };
 
   const handleQuantityChange = (index, value) => {
     const updatedOrderItems = [...orderItems];
     updatedOrderItems[index].quantity = value;
+    setOrderItems(updatedOrderItems);
   };
 
   const handleAddProduct = () => {
-    setOrderItems([...orderItems, { product_id: "", quantity: 0, price: 0 }]);
+    setOrderItems([...orderItems, { product_id: null, quantity: 0, price: 0 }]);
   };
 
   const handleRemoveProduct = (index) => {
     const updatedOrderItems = orderItems.filter((_, i) => i !== index);
     setOrderItems(updatedOrderItems);
   };
+
   const handleOpen = () => setOpen(!open);
+
   const addOrderHandler = async (e) => {
     e.preventDefault();
     const data = {
@@ -84,22 +94,21 @@ const AddOrders = () => {
       phoneNumber,
       orderItems,
     };
-    const response = await axios
-      .post(addOrderApi, data, {
+    try {
+      const response = await axios.post(addOrderApi, data, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
           "Content-Type": "application/json",
         },
-      })
-      .then(() => {
-        setOpen(!open);
-        window.location.reload();
-        dispatch(addCurrentOrderRedux(response.data));
-      })
-      .catch((e) => toast.error(e.response.data.message, toastOptions));
-
-    if (status === "Completed") {
-      dispatch(addSalesRedux(response.data));
+      });
+      setOpen(!open);
+      window.location.reload();
+      dispatch(addCurrentOrderRedux(response.data));
+      if (status === "Completed") {
+        dispatch(addSalesRedux(response.data));
+      }
+    } catch (e) {
+      toast.error(e.response.data.message, toastOptions);
     }
   };
 
@@ -117,7 +126,7 @@ const AddOrders = () => {
         handler={handleOpen}
         className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 "
       >
-        <div className="bg-white p-5 rounded-lg shadow-lg   max-h-screen overflow-y-auto w-[100vh]">
+        <div className="bg-white p-5 rounded-lg shadow-lg max-h-screen overflow-y-auto w-[100vh]">
           <div className="flex items-center justify-between mb-4">
             <DialogHeader className="flex flex-col items-start">
               <Typography className="mb-1 text-2xl font-bold text-blue-700">
@@ -139,7 +148,7 @@ const AddOrders = () => {
             </svg>
           </div>
           <form onSubmit={addOrderHandler}>
-            <DialogBody className="max-h-[700px]  overflow-y-auto">
+            <DialogBody className="max-h-[700px] overflow-y-auto">
               <div className="grid gap-6">
                 {orderItems.map((item, index) => (
                   <div key={index} className="space-y-4">
@@ -147,25 +156,22 @@ const AddOrders = () => {
                       <Typography className="mb-1 text-black font-semibold">
                         Produit {index + 1}
                       </Typography>
-                      <Select
-                        label="Select a product"
-                        value={item.product_id}
-                        onChange={(value) => handleProductChange(index, value)}
-                        className="flex items-center justify-center"
-                      >
-                        {allProd.map((p) => (
-                          <Option key={p._id} value={p._id}>
-                            <div className="flex items-center">
-                              <img
-                                src={p.image}
-                                alt=""
-                                className="h-6 w-6 mr-2"
-                              />
-                              {p.title}
-                            </div>
-                          </Option>
-                        ))}
-                      </Select>
+                      <AsyncSelect
+                        cacheOptions
+                        loadOptions={(inputValue, callback) =>
+                          loadOptions(inputValue, callback)
+                        }
+                        defaultOptions
+                        value={allProd.find(
+                          (opt) => opt.value === item.product_id
+                        )}
+                        onChange={(selectedOption) =>
+                          handleProductChange(index, selectedOption)
+                        }
+                        placeholder="Select a product"
+                        className="basic-single"
+                        classNamePrefix="select"
+                      />
                     </div>
                     <div>
                       <Typography className="mb-1 text-black font-semibold">
@@ -243,40 +249,19 @@ const AddOrders = () => {
                     onChange={(event) => setAddress(event.target.value)}
                   />
                 </div>
-                <div>
-                  <Typography className="mb-1 text-black font-semibold">
-                    Status
-                  </Typography>
-                  <Select
-                    value={status}
-                    onChange={(value) => setStatus(value)}
-                    className="flex items-center justify-center"
-                  >
-                    {["Pending", "Cancelled", "Completed"].map(
-                      (statusOption) => (
-                        <Option key={statusOption} value={statusOption}>
-                          {statusOption}
-                        </Option>
-                      )
-                    )}
-                  </Select>
-                </div>
               </div>
             </DialogBody>
-            <DialogFooter className="space-x-2 mt-4">
+            <DialogFooter>
               <Button
                 variant="text"
-                color="gray"
-                className="mr-1"
+                color="red"
                 onClick={handleOpen}
+                className="mr-1"
               >
-                <span>Annuler</span>
+                Annuler
               </Button>
-              <Button
-                type="submit"
-                className="bg-blue-500 hover:bg-blue-600 text-white"
-              >
-                <span>Confirmer</span>
+              <Button variant="gradient" color="green" type="submit">
+                Ajouter
               </Button>
             </DialogFooter>
           </form>

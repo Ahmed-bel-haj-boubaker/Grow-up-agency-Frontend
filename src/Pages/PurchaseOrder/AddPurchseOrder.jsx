@@ -7,13 +7,11 @@ import {
   DialogFooter,
   Input,
   Typography,
-  Select,
-  Option,
 } from "@material-tailwind/react";
 import axios from "axios";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
+import AsyncSelect from "react-select/async";
 import { addPurchaseOrderApi } from "../../Api's/PurchaseOrderApi";
-//import { addPurchaseOrderRedux } from "../../Redux/slice/purchaseOrderSlice";
 
 function AddPurchseOrder() {
   const [open, setOpen] = useState(false);
@@ -21,13 +19,54 @@ function AddPurchseOrder() {
   const [product, setProductId] = useState("");
   const [quantity, setQuantity] = useState(1);
   const suppliers = useSelector((state) => state.supplier.listAllSupplier);
-  console.log(suppliers);
   const allProd = useSelector((state) => state.products.listofAllProducts);
 
-  console.log(suppliers);
   const handleOpen = () => setOpen(!open);
 
-  const dispatch = useDispatch();
+  const filterSuppliers = (inputValue) => {
+    return suppliers
+      .filter((supplier) =>
+        supplier.name.toLowerCase().includes(inputValue.toLowerCase())
+      )
+      .map((supplier) => ({
+        value: supplier._id,
+        label: supplier.name,
+      }));
+  };
+
+  const loadSupplierOptions = (inputValue, callback) => {
+    const filteredSuppliers = filterSuppliers(inputValue);
+    callback(filteredSuppliers);
+  };
+
+  const filterProducts = (inputValue) => {
+    return allProd
+      .filter((product) =>
+        product.title.toLowerCase().includes(inputValue.toLowerCase())
+      )
+      .map((product) => ({
+        value: product._id,
+        label: (
+          <div className="flex items-center">
+            <img src={product.image} alt="" className="h-6 w-6 mr-2" />
+            {product.title}
+          </div>
+        ),
+      }));
+  };
+
+  const loadProductOptions = (inputValue, callback) => {
+    const filteredProducts = filterProducts(inputValue);
+    callback(filteredProducts);
+  };
+
+  const handleSupplierChange = (selectedOption) => {
+    setSupplierId(selectedOption ? selectedOption.value : "");
+  };
+
+  const handleProductChange = (selectedOption) => {
+    setProductId(selectedOption ? selectedOption.value : "");
+  };
 
   const addPurchaseOrderHandler = async (e) => {
     e.preventDefault();
@@ -63,7 +102,7 @@ function AddPurchseOrder() {
         className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105"
         onClick={handleOpen}
       >
-        Ajouter une bons commande
+        Ajouter une bon de commande
       </Button>
       <Dialog
         open={open}
@@ -75,7 +114,7 @@ function AddPurchseOrder() {
           <div className="flex items-center justify-between mb-4">
             <DialogHeader className="flex flex-col items-start">
               <Typography className="mb-1 text-2xl font-bold text-blue-700">
-                Ajouter une bons commande
+                Ajouter une bon de commande
               </Typography>
             </DialogHeader>
             <svg
@@ -99,38 +138,62 @@ function AddPurchseOrder() {
                   <Typography className="mb-1 text-black font-semibold">
                     Fournisseur
                   </Typography>
-                  <Select
-                    className="flex items-center justify-center"
-                    label="Select a supplier"
-                    value={supplierId}
-                    onChange={(e) => setSupplierId(e)}
-                  >
-                    {suppliers?.map((supplier) => (
-                      <Option key={supplier._id} value={supplier._id}>
-                        {supplier.name}
-                      </Option>
-                    ))}
-                  </Select>
+                  <AsyncSelect
+                    cacheOptions
+                    loadOptions={loadSupplierOptions}
+                    defaultOptions
+                    value={
+                      suppliers.find((sup) => sup._id === supplierId)
+                        ? {
+                            value: supplierId,
+                            label: suppliers.find(
+                              (sup) => sup._id === supplierId
+                            ).name,
+                          }
+                        : null
+                    }
+                    onChange={handleSupplierChange}
+                    placeholder="Select a supplier"
+                    className="basic-single"
+                    classNamePrefix="select"
+                  />
                 </div>
                 <div>
                   <Typography className="mb-1 text-black font-semibold">
                     Produit
                   </Typography>
-                  <Select
-                    className="flex items-center justify-center"
-                    label="Select a supplier"
-                    value={product}
-                    onChange={(e) => setProductId(e)}
-                  >
-                    {allProd?.map((p) => (
-                      <Option key={p._id} value={p._id}>
-                        <div className="flex items-center">
-                          <img src={p.image} alt="" className="h-6 w-6 mr-2" />
-                          {p.title}
-                        </div>
-                      </Option>
-                    ))}
-                  </Select>
+                  <AsyncSelect
+                    cacheOptions
+                    loadOptions={loadProductOptions}
+                    defaultOptions
+                    value={
+                      allProd.find((prod) => prod._id === product)
+                        ? {
+                            value: product,
+                            label: (
+                              <div className="flex items-center">
+                                <img
+                                  src={
+                                    allProd.find((prod) => prod._id === product)
+                                      .image
+                                  }
+                                  alt=""
+                                  className="h-6 w-6 mr-2"
+                                />
+                                {
+                                  allProd.find((prod) => prod._id === product)
+                                    .title
+                                }
+                              </div>
+                            ),
+                          }
+                        : null
+                    }
+                    onChange={handleProductChange}
+                    placeholder="Select a product"
+                    className="basic-single"
+                    classNamePrefix="select"
+                  />
                 </div>
                 <div>
                   <Typography className="mb-1 text-black font-semibold">
@@ -151,7 +214,7 @@ function AddPurchseOrder() {
                 className="hover:bg-gray-100 transition duration-300"
                 onClick={handleOpen}
               >
-                Cancel
+                Annuler
               </Button>
               <Button
                 variant="gradient"
