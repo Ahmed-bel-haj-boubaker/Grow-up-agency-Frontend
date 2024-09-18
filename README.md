@@ -19,6 +19,6 @@ Make sure you have the following tools installed:
 
 
 ## ✨ Features
-🎨 TailwindCSS: For beautiful and customizable UI components.
-🛠️ State Management: Efficiently managed using React hooks.
-⚡ Fast Development: Hot-reload enabled for instant feedback during development.
+- 🎨 **TailwindCSS**: For beautiful and customizable UI components.
+- 🛠️ **State Management**: Efficiently managed using React hooks.
+- ⚡ **Fast Development**: Hot-reload enabled for instant feedback during development.
