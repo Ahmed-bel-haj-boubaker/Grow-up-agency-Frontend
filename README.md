@@ -18,7 +18,4 @@ Make sure you have the following tools installed:
 - [📦 npm](https://www.npmjs.com/) (Version 10.8.2 recommended)
 
 
-## ✨ Features
-- 🎨 **TailwindCSS**: For beautiful and customizable UI components.
-- 🛠️ **State Management**: Efficiently managed using React hooks.
-- ⚡ **Fast Development**: Hot-reload enabled for instant feedback during development.
+
