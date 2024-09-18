@@ -1,7 +1,4 @@
-# 🚀 ReactJS Project
-
-This project is built using **ReactJS** and is designed to [Brief project description]. Below you'll find instructions on how to set up and run the project.
-
+ 
 ## 📦 Technologies Used
 
 - 🖼️ **ReactJS**: A JavaScript library for building user interfaces.
