@@ -17,9 +17,8 @@ Make sure you have the following tools installed:
 - [🟢 Node.js](https://nodejs.org/) (Version 18.17.1 recommended)
 - [📦 npm](https://www.npmjs.com/) (Version 10.8.2 recommended)
 
-### Steps to Run the Project Locally
 
-✨ Features
+###✨ Features
 🎨 TailwindCSS: For beautiful and customizable UI components.
 🛠️ State Management: Efficiently managed using React hooks.
 ⚡ Fast Development: Hot-reload enabled for instant feedback during development.
